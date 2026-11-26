@@ -45,6 +45,7 @@ from urllib.error import HTTPError
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
+import nas
 from link import TIKTOK_SHORT_HOSTS
 from link import parse as parse_link
 
@@ -221,19 +222,26 @@ def check() -> dict[str, Any]:
         ("gallery-dl", "gallery-dl", "uv tool install gallery-dl"),
         ("ffmpeg", "ffmpeg", ffmpeg_install),
         ("ffprobe", "ffmpeg", ffmpeg_install),  # ffprobe ships with ffmpeg
-        *((engine.program, engine.name, f"uv tool install {engine.package}") for engine in engines()),
+        *((engine.program, engine.name, f"uv tool install {engine.package}") for engine in local_engines()),
     ]
     missing: list[dict[str, str]] = []
     for program, name, install in needed:
         if not shutil.which(program) and all(m["tool"] != name for m in missing):
             missing.append({"tool": name, "install": install})
-    return {"ok": not missing, "missing": missing, "speech_model": speech_model(engines()[0])}
+    return {"ok": not missing, "missing": missing,
+            "speech_model": "remote" if nas.scriberr_configured() else speech_model(engines()[0])}
+
+
+def local_engines() -> list[Engine]:
+    """The engines this computer must have: none when Scriberr is set up to transcribe."""
+    return [] if nas.scriberr_configured() else engines()
 
 
 def clean(folder: Path) -> dict[str, Any]:
     """Delete a work folder, but only one that read made: it holds the marker file."""
     if not (folder / MARKER).is_file():
         return {"error": f"{folder} is not a Graveyard Killer work folder, so it was left alone"}
+    nas.remote_clean(folder)  # the NAS's copy, when this read came from there
     shutil.rmtree(folder)
     return {"cleaned": str(folder)}
 
@@ -298,7 +306,7 @@ def missing_tools() -> str:
     Windows leaves FileNotFoundError.filename empty, so the name comes from a lookup.
     It only looks for .exe files, the only kind post.py starts on Windows, and runs nothing.
     """
-    names = ["yt-dlp", "gallery-dl", "ffmpeg", "ffprobe", *(engine.program for engine in engines())]
+    names = ["yt-dlp", "gallery-dl", "ffmpeg", "ffprobe", *(engine.program for engine in local_engines())]
     suffix = ".exe" if system() == "Windows" else ""
     gone = [name for name in names if not shutil.which(name + suffix)]
     return ", ".join(gone) or "a tool"
@@ -853,6 +861,16 @@ def has_audio(media: Path) -> bool:
 def transcribe(media: Path, out_dir: Path, language: str | None) -> tuple[str, str | None, str]:
     """The speech in media, the language it is in when known, and the engine's name."""
     out_dir.mkdir()
+    if nas.scriberr_configured():
+        try:
+            audio = out_dir / "audio.mp3"  # mono 16 kHz: far less to upload than the video
+            run(["ffmpeg", "-v", "error", "-y", "-i", str(media), "-vn", "-ac", "1", "-ar", "16000",
+                 "-b:a", "48k", str(audio)], capture_output=True, text=True, check=True)
+            text, spoken = nas.scriberr_transcribe(audio, time_limit("scriberr"))
+            return text, spoken or language, "scriberr"
+        except (nas.NasUnavailable, OSError, ValueError, subprocess.SubprocessError, BlockedTool, ToolTimedOut) as why:
+            # Any failure goes on to the engine on this computer. The reason holds no secret.
+            print(f"scriberr: {type(why).__name__}: {why}"[:300], file=sys.stderr)
     engine = engine_for(language)
     command = [engine.program, str(media), *engine.options, str(out_dir)]
     if language and engine.name == "whisper":  # Parakeet takes no language option
@@ -983,6 +1001,20 @@ def upload(image: Path, upload_url: str, headers: list[str], field: str = "file"
     return {"uploaded": answer.get("file_upload_id") or answer.get("id")}
 
 
+def read_anywhere(link: str, language: str | None, login: str | None) -> dict[str, Any]:
+    """Read on the NAS when one is set up, and here when it is not, or does not answer.
+
+    A login read always stays here: it uses this computer's browser cookies.
+    """
+    if login is None and nas.remote_configured():
+        try:
+            return nas.remote_read(link, language, new_work_folder)
+        except (nas.NasUnavailable, ValueError, OSError) as why:
+            print(f"remote: {type(why).__name__}: {why}"[:300], file=sys.stderr)
+            return {**read(link, language, login), "remote": "unreachable, read locally"}
+    return read(link, language, login)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="post.py")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -1027,7 +1059,7 @@ def main() -> None:
             sys.exit(2)
     else:
         link = args.link if args.link is not None else sys.stdin.read().strip()
-        print(json.dumps(read(link, args.language, args.login)))
+        print(json.dumps(read_anywhere(link, args.language, args.login)))
 
 
 if __name__ == "__main__":

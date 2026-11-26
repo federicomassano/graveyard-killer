@@ -135,7 +135,7 @@ This slice proves the Worker's hardest parts by hand: downloading, transcription
   - `id`, `author`, `title`, `caption`
   - `kind`: `video` or `photos`
   - `duration`
-  - `transcript`, plus `transcript_source` (`captions`, `auto_captions`, `parakeet`, `whisper` or `none`) and `transcript_language`
+  - `transcript`, plus `transcript_source` (`captions`, `auto_captions`, `parakeet`, `whisper`, `scriberr` or `none`) and `transcript_language`
   - `work`: the work folder, for `clean`
   - `keyframes`: image paths
   - `thumbnail`: a JPEG path, kept under 5 MiB for Notion's Free plan

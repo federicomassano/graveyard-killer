@@ -1,0 +1,26 @@
+# TrueNAS Custom App "gk-fetcher". Needs, before it starts:
+#   /mnt/pool_apps/config/gk-fetcher/app   server.py, post.py, link.py, nas.py, bootstrap.sh (see README)
+#   /mnt/DataPool/gk-fetcher/work          scratch space for reads, cleaned after an hour
+# Fill GK_TOKEN and GK_SCRIBERR_KEY in the app's own environment screen, not in a file of the repo.
+services:
+  gk-fetcher:
+    image: python:3.12-slim
+    restart: unless-stopped
+    user: "568:568"
+    command: ["sh", "/app/bootstrap.sh"]
+    ports:
+      - "8096:8080"            # LAN, and the target of the Cloudflare route or `tailscale serve`
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Scriberr is reached through its published port 8095
+    environment:
+      GK_TOKEN: "CHANGE_ME"                    # openssl rand -hex 32
+      GK_SCRIBERR_URL: "http://host.docker.internal:8095"
+      GK_SCRIBERR_KEY: "CHANGE_ME"             # created in Scriberr's settings
+      GK_SCRIBERR_PROFILE: "gk"
+      GK_WORK: /work
+      GK_POST: /app/post.py
+      GK_TTL: "3600"
+    volumes:
+      - /mnt/pool_apps/config/gk-fetcher:/config
+      - /mnt/pool_apps/config/gk-fetcher/app:/app:ro
+      - /mnt/DataPool/gk-fetcher/work:/work

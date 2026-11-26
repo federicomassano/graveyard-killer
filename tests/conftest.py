@@ -29,6 +29,14 @@ def link_or_copy(source: str | Path, target: Path) -> None:
         shutil.copy(source, target)
 
 
+@pytest.fixture(autouse=True)
+def no_nas_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """No test may see this computer's NAS setup, in its variables or in ~/.graveyard-killer/nas.json."""
+    for name in [n for n in os.environ if n.startswith(("GK_SCRIBERR", "GK_REMOTE"))]:
+        monkeypatch.delenv(name)
+    monkeypatch.setenv("GK_CONFIG", str(tmp_path / "no-nas.json"))
+
+
 @pytest.fixture(scope="session")
 def fake_launcher(tmp_path_factory: pytest.TempPathFactory) -> Path | None:
     """On Windows, the fake tool wrapped once in a real .exe.
@@ -140,7 +148,9 @@ def post(tmp_path: Path, fake_launcher: Path | None) -> Iterator[Callable[..., R
         uv_tools = tmp_path / "uv-tools"
         uv_tools.mkdir(exist_ok=True)
         full_env = {
-            **os.environ,
+            # Nothing of this computer's NAS setup may reach a test: no GK_ variable, no config file.
+            **{k: v for k, v in os.environ.items() if not k.startswith(("GK_SCRIBERR", "GK_REMOTE"))},
+            "GK_CONFIG": str(tmp_path / "no-nas.json"),
             "TMPDIR": str(temp),
             "UV_TOOL_DIR": str(uv_tools),
             **(env or {}),
