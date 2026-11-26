@@ -1,0 +1,27 @@
+# TrueNAS Custom App "gk-worker": the nightly tidy-up, done on the NAS with a local Ollama model (no Claude).
+# Needs: /mnt/pool_apps/config/gk-worker/app (worker.py, post.py, link.py, vault.py, nas.py), the Library dataset,
+# an Ollama app with the model pulled, and gk-fetcher. The user below must own the Library's files (see README).
+services:
+  gk-worker:
+    image: python:3.12-slim
+    restart: unless-stopped
+    user: "CHANGE_ME:CHANGE_ME"        # the uid:gid that owns the Library's files on the host
+    command: ["python", "/app/worker.py"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      VAULT: "/vault/Graveyard Killer"
+      SCRIPTS: /app
+      STATE: /vault/.gk-state
+      OLLAMA_URL: "http://host.docker.internal:11434"
+      OLLAMA_MODEL: "qwen2.5:14b-instruct"
+      GK_REMOTE_URL: "http://host.docker.internal:8096"
+      GK_REMOTE_TOKEN: "CHANGE_ME"
+      WORKER_AT: "00:30"               # container time is UTC: 01:30 in Rome in winter
+      MAX_READS: "20"
+      TG_TOKEN: ""                     # optional: Telegram bot token and your chat id, for the morning message
+      TG_CHAT: ""
+    volumes:
+      - /mnt/pool_apps/config/gk-worker:/state
+      - /mnt/pool_apps/config/gk-worker/app:/app:ro
+      - /mnt/DataPool/graveyard-library:/vault

@@ -53,3 +53,16 @@ with `link.py`, skips a post already in the Library and appends the link to the 
 "Share here" note, the format the Worker already reads. Only the ids in `TG_ALLOWED` are served;
 `/id` answers anyone, so you can find yours. `compose.bot.truenas.yaml` runs it from a stock image,
 with `bot.py` and `link.py` in `pool_apps/config/gk-bot/app`. `brand/logo.svg` is the bot's picture.
+
+## Nightly worker (gk-worker), no Claude
+
+`worker.py` does what the plugin's Worker does, with a local Ollama model in place of Claude: it adopts the
+shares the bot saved, reads each post through `post.py` (gk-fetcher and Scriberr), has the model write the card
+(its answer is checked field by field: category from the Settings, clean tags, lengths), files it with `vault.py`
+and attaches the cover. It follows the Settings' limits and stops with Instagram at the first login request.
+For the morning it writes `Digest/nuovo.md` (a few lines per card), appends to `Conoscenza/INDICE.md` and, with
+`TG_TOKEN`/`TG_CHAT`, sends the digest on Telegram. A Claude session can then read that one small file.
+`worker.py --once` runs now; creating `.gk-state/run-now` in the vault starts a run within 30 seconds.
+`compose.worker.truenas.yaml` is the app. Files that `vault.py` writes are mode 600 and owned by whoever ran it,
+so the bot and the worker must run as the same uid as the agent that uses the Library.
+`GK_MIN_GAP` on gk-fetcher (300 s) keeps Instagram from asking for a login. Not seen: the frames, so no on-screen text.

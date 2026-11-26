@@ -20,6 +20,7 @@ services:
       GK_WORK: /work
       GK_POST: /app/post.py
       GK_TTL: "3600"
+      GK_MIN_GAP: "300"          # seconds between two Instagram reads: 6 s was not enough, Instagram asked for a login
     volumes:
       - /mnt/pool_apps/config/gk-fetcher:/config
       - /mnt/pool_apps/config/gk-fetcher/app:/app:ro
