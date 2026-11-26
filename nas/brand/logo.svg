@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="640" height="640">
+  <defs>
+    <radialGradient id="sky" cx="50%" cy="30%" r="80%"><stop offset="0" stop-color="#3a2656"/><stop offset="1" stop-color="#120d1c"/></radialGradient>
+    <linearGradient id="ig" x1="0.1" y1="1" x2="0.9" y2="0">
+      <stop offset="0" stop-color="#feda75"/><stop offset="0.25" stop-color="#fa7e1e"/>
+      <stop offset="0.5" stop-color="#d62976"/><stop offset="0.75" stop-color="#962fbf"/><stop offset="1" stop-color="#4f5bd5"/>
+    </linearGradient>
+    <radialGradient id="moon"><stop offset="0.55" stop-color="#f6ecd6"/><stop offset="1" stop-color="#f6ecd6" stop-opacity="0"/></radialGradient>
+    <filter id="blur"><feGaussianBlur stdDeviation="14"/></filter>
+  </defs>
+  <rect width="640" height="640" fill="url(#sky)"/>
+  <circle cx="500" cy="120" r="92" fill="url(#moon)" opacity="0.55"/>
+  <circle cx="500" cy="120" r="46" fill="#f6ecd6"/>
+  <circle cx="486" cy="108" r="9" fill="#e4d6b8"/><circle cx="514" cy="134" r="6" fill="#e4d6b8"/>
+  <!-- small stones behind -->
+  <g fill="#241a36">
+    <path d="M70 540 V440 a42 42 0 0 1 84 0 V540 Z"/>
+    <path d="M500 545 V455 a38 38 0 0 1 76 0 V545 Z"/>
+    <rect x="104" y="458" width="6" height="40" rx="3" fill="#3a2b52"/><rect x="92" y="472" width="30" height="6" rx="3" fill="#3a2b52"/>
+  </g>
+  <!-- tombstone with the Instagram gradient -->
+  <path d="M170 548 V258 A150 150 0 0 1 470 258 V548 Z" fill="url(#ig)"/>
+  <path d="M170 548 V258 A150 150 0 0 1 470 258" fill="none" stroke="#ffffff" stroke-opacity="0.25" stroke-width="4"/>
+  <!-- camera glyph, its lens a Claude spark -->
+  <rect x="236" y="290" width="168" height="168" rx="48" fill="none" stroke="#fff" stroke-width="13"/>
+  <circle cx="378" cy="326" r="9" fill="#fff"/>
+  <g stroke="#fff" stroke-width="11" stroke-linecap="round" transform="translate(320 374)">
+    <line x1="0" y1="-12" x2="0" y2="-46"/><line x1="6" y1="-10" x2="21" y2="-34"/><line x1="10" y1="-6" x2="40" y2="-22"/>
+    <line x1="12" y1="0" x2="46" y2="0"/><line x1="10" y1="6" x2="38" y2="20"/><line x1="6" y1="10" x2="23" y2="36"/>
+    <line x1="0" y1="12" x2="0" y2="44"/><line x1="-6" y1="10" x2="-22" y2="34"/><line x1="-10" y1="6" x2="-40" y2="21"/>
+    <line x1="-12" y1="0" x2="-46" y2="0"/><line x1="-10" y1="-6" x2="-38" y2="-21"/><line x1="-6" y1="-10" x2="-21" y2="-36"/>
+  </g>
+  <!-- ground, fog and grass -->
+  <ellipse cx="320" cy="640" rx="420" ry="120" fill="#0b0810"/>
+  <path d="M0 560 Q160 520 320 548 T640 540 V640 H0 Z" fill="#0b0810"/>
+  <g fill="none" stroke="#1d3a2a" stroke-width="5" stroke-linecap="round">
+    <path d="M150 556 q-4 -22 -12 -30"/><path d="M158 556 q2 -24 10 -34"/><path d="M480 552 q-3 -22 -11 -30"/>
+    <path d="M488 552 q3 -24 12 -32"/><path d="M60 566 q-3 -18 -10 -26"/><path d="M590 562 q4 -20 12 -26"/>
+  </g>
+  <ellipse cx="170" cy="590" rx="190" ry="26" fill="#cfc2e6" opacity="0.14" filter="url(#blur)"/>
+  <ellipse cx="480" cy="600" rx="200" ry="26" fill="#cfc2e6" opacity="0.12" filter="url(#blur)"/>
+</svg>

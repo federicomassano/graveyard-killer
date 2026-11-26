@@ -45,3 +45,11 @@ Access application with two policies: *Allow* your Google account, *Service Auth
 (`GK_REMOTE_CF_ID/SECRET`). The bearer token still applies behind it.
 B. Tailscale: `tailscale serve --bg --https=443 http://127.0.0.1:8096` on the NAS, then
 `GK_REMOTE_URL=https://<nas>.<tailnet>.ts.net`. The computer must be on the tailnet.
+
+## Telegram bot (gk-bot)
+
+Share a reel, a TikTok or a YouTube video to the bot from the phone's share sheet: it cleans the link
+with `link.py`, skips a post already in the Library and appends the link to the Obsidian Library's
+"Share here" note, the format the Worker already reads. Only the ids in `TG_ALLOWED` are served;
+`/id` answers anyone, so you can find yours. `compose.bot.truenas.yaml` runs it from a stock image,
+with `bot.py` and `link.py` in `pool_apps/config/gk-bot/app`. `brand/logo.svg` is the bot's picture.

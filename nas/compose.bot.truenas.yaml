@@ -1,0 +1,19 @@
+# TrueNAS Custom App "gk-bot": a Telegram bot that files shared posts into the Library's "Share here" note.
+# Needs /mnt/pool_apps/config/gk-bot/app (bot.py, link.py), that folder writable for uid 568 (state), and the
+# Library folder. Put the bot's token in the app's environment screen, never in a file.
+services:
+  gk-bot:
+    image: python:3.12-slim
+    restart: unless-stopped
+    user: "568:568"
+    command: ["python", "/app/bot.py"]
+    environment:
+      TG_TOKEN: "CHANGE_ME"          # from @BotFather
+      TG_ALLOWED: "CHANGE_ME"        # your Telegram user id (send /id to the bot), several separated by commas
+      VAULT: /vault
+      STATE: /state
+      PYTHONPATH: /app
+    volumes:
+      - /mnt/pool_apps/config/gk-bot:/state
+      - /mnt/pool_apps/config/gk-bot/app:/app:ro
+      - /mnt/DataPool/graveyard-library:/vault
